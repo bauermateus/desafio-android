@@ -12,32 +12,34 @@ import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var progressBar: ProgressBar
-    private lateinit var adapter: UserListAdapter
+    private val recyclerView: RecyclerView by lazy {
+        findViewById<RecyclerView>(R.id.recyclerView)
+    }
+    private val progressBar: ProgressBar by lazy {
+        findViewById<ProgressBar>(R.id.user_list_progress_bar)
+    }
+    private val adapter: UserListAdapter by lazy {
+        UserListAdapter()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val viewModel: MainViewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        recyclerView = findViewById(R.id.recyclerView)
-        adapter = UserListAdapter()
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(this)
-        progressBar = findViewById(R.id.user_list_progress_bar)
         progressBar.visibility = View.VISIBLE
 
         viewModel.fetchUsers()
 
         viewModel.users.observe(this) {
-            adapter.users = it
+                adapter.updateUsers(it)
         }
         viewModel.apiStatus.observe(this) {
             if (it) {
                 progressBar.visibility = View.GONE
             } else {
                 progressBar.visibility = View.GONE
-                recyclerView.visibility = View.GONE
                 val message = getString(R.string.error)
                 Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT)
                     .show()
